@@ -20,12 +20,27 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
   const [isOnline, setIsOnline] = useState(true);
 
   React.useEffect(() => {
+    let retries = 0;
+    const maxRetries = 5;
+    
     const checkConnection = async () => {
       try {
         const res = await fetch(`${window.location.origin}/api/health`);
-        setIsOnline(res.ok);
+        if (res.ok) {
+          setIsOnline(true);
+        } else if (retries < maxRetries) {
+          retries++;
+          setTimeout(checkConnection, 2000);
+        } else {
+          setIsOnline(false);
+        }
       } catch {
-        setIsOnline(false);
+        if (retries < maxRetries) {
+          retries++;
+          setTimeout(checkConnection, 2000);
+        } else {
+          setIsOnline(false);
+        }
       }
     };
     checkConnection();
