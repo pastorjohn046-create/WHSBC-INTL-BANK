@@ -53,15 +53,24 @@ const WealthCard = ({ label, value, icon, color }: any) => (
   </div>
 );
 
-const ControlItem = ({ label, icon }: any) => (
+const ControlItem = ({ label, icon, active, onToggle }: any) => (
   <div className="flex items-center justify-between p-4 glass rounded-2xl">
     <div className="flex items-center space-x-4">
       <div className="text-zinc-500">{icon}</div>
       <span className="text-sm font-black uppercase tracking-tight">{label}</span>
     </div>
-    <div className="w-12 h-6 bg-zinc-800 rounded-full relative p-1">
-      <div className="w-4 h-4 bg-zinc-500 rounded-full" />
-    </div>
+    <button 
+      onClick={onToggle}
+      className={cn(
+        "w-12 h-6 rounded-full relative p-1 transition-colors duration-300",
+        active ? "bg-red-600" : "bg-zinc-800"
+      )}
+    >
+      <motion.div 
+        animate={{ x: active ? 24 : 0 }}
+        className="w-4 h-4 bg-white rounded-full shadow-sm" 
+      />
+    </button>
   </div>
 );
 
@@ -106,53 +115,94 @@ const WealthView = ({ user }: { user: User }) => (
   </motion.div>
 );
 
-const CardsView = ({ user }: { user: User }) => (
-  <motion.div 
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    className="space-y-8"
-  >
-    <div className="space-y-2">
-      <h3 className="text-2xl font-black tracking-tighter uppercase">Private Cards</h3>
-      <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Infinite Access</p>
-    </div>
+const CardsView = ({ user }: { user: User }) => {
+  const [controls, setControls] = useState({
+    freeze: false,
+    limits: true,
+    contactless: true
+  });
 
-    <div className="relative aspect-[1.58/1] w-full rounded-[24px] red-gradient p-8 flex flex-col justify-between overflow-hidden shadow-2xl">
-      <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">WHSBC Private</p>
-          <div className="w-12 h-8 bg-amber-400/20 rounded-md border border-amber-400/30" />
-        </div>
-        <Shield className="w-8 h-8 text-white/20" />
+  const cardNumber = `4488 ${user.accountNumber.slice(0, 4)} ${user.accountNumber.slice(4)} 8888`;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="space-y-8"
+    >
+      <div className="space-y-2">
+        <h3 className="text-2xl font-black tracking-tighter uppercase">Private Cards</h3>
+        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Infinite Access</p>
       </div>
-      
-      <div className="space-y-4">
-        <p className="text-2xl font-mono tracking-[0.2em] text-white">•••• •••• •••• 8888</p>
-        <div className="flex justify-between items-end">
-          <div>
-            <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Card Holder</p>
-            <p className="text-sm font-black uppercase tracking-tight">{user.name}</p>
+
+      <div className={cn(
+        "relative aspect-[1.58/1] w-full rounded-[24px] p-8 flex flex-col justify-between overflow-hidden shadow-2xl transition-all duration-500",
+        controls.freeze ? "grayscale opacity-50" : "red-gradient"
+      )}>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">WHSBC Private</p>
+            <div className="w-12 h-8 bg-amber-400/20 rounded-md border border-amber-400/30 flex items-center justify-center">
+               <div className="w-8 h-5 bg-amber-400/40 rounded-sm" />
+            </div>
           </div>
           <div className="text-right">
-            <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Expires</p>
-            <p className="text-sm font-black">12/28</p>
+            <Shield className="w-8 h-8 text-white/20 ml-auto" />
+            {controls.freeze && (
+              <p className="text-[10px] font-black text-white bg-black/40 px-2 py-1 rounded mt-2 uppercase">Frozen</p>
+            )}
           </div>
         </div>
+        
+        <div className="space-y-4">
+          <p className="text-2xl font-mono tracking-[0.2em] text-white">{cardNumber}</p>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Card Holder</p>
+              <p className="text-sm font-black uppercase tracking-tight">{user.name}</p>
+            </div>
+            <div className="flex space-x-6">
+              <div className="text-right">
+                <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Expires</p>
+                <p className="text-sm font-black">12/28</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest">CVV</p>
+                <p className="text-sm font-black">888</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-    </div>
-
-    <div className="space-y-4">
-      <h4 className="text-xs font-black tracking-widest uppercase text-zinc-500">Card Controls</h4>
-      <div className="space-y-3">
-        <ControlItem label="Freeze Card" icon={<Lock />} />
-        <ControlItem label="Limit Settings" icon={<TrendingUp />} />
-        <ControlItem label="Contactless" icon={<Globe />} />
+      <div className="space-y-4">
+        <h4 className="text-xs font-black tracking-widest uppercase text-zinc-500">Card Controls</h4>
+        <div className="space-y-3">
+          <ControlItem 
+            label="Freeze Card" 
+            icon={<Lock />} 
+            active={controls.freeze}
+            onToggle={() => setControls(prev => ({ ...prev, freeze: !prev.freeze }))}
+          />
+          <ControlItem 
+            label="Limit Settings" 
+            icon={<TrendingUp />} 
+            active={controls.limits}
+            onToggle={() => setControls(prev => ({ ...prev, limits: !prev.limits }))}
+          />
+          <ControlItem 
+            label="Contactless" 
+            icon={<Globe />} 
+            active={controls.contactless}
+            onToggle={() => setControls(prev => ({ ...prev, contactless: !prev.contactless }))}
+          />
+        </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 const VaultView = ({ user, onLogout }: { user: User; onLogout: () => void }) => (
   <motion.div 
@@ -250,13 +300,13 @@ const AdminView = ({ currentUser, onUpdateUser }: { currentUser: User; onUpdateU
   const [newMethodDetails, setNewMethodDetails] = useState("");
 
   const fetchUsers = () => {
-    fetch("/api/admin/users")
+    fetch(`${window.location.origin}/api/admin/users`)
       .then(res => res.json())
       .then(data => setUsers(data));
   };
 
   const fetchMethods = () => {
-    fetch("/api/deposit-methods")
+    fetch(`${window.location.origin}/api/deposit-methods`)
       .then(res => res.json())
       .then(data => setDepositMethods(data));
   };
@@ -268,7 +318,7 @@ const AdminView = ({ currentUser, onUpdateUser }: { currentUser: User; onUpdateU
 
   const handleUpdate = async () => {
     if (!editingUser) return;
-    const res = await fetch("/api/admin/update-user", {
+    const res = await fetch(`${window.location.origin}/api/admin/update-user`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -289,7 +339,7 @@ const AdminView = ({ currentUser, onUpdateUser }: { currentUser: User; onUpdateU
 
   const handleUpdateMethod = async () => {
     if (!editingMethod) return;
-    const res = await fetch("/api/admin/update-deposit-method", {
+    const res = await fetch(`${window.location.origin}/api/admin/update-deposit-method`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -493,11 +543,11 @@ const AdminView = ({ currentUser, onUpdateUser }: { currentUser: User; onUpdateU
 };
 
 const ActionButton = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick?: () => void }) => (
-  <button onClick={onClick} className="flex flex-col items-center space-y-2 group">
-    <div className="w-full aspect-square rounded-2xl glass flex items-center justify-center group-hover:bg-red-600/10 group-hover:text-red-600 transition-all group-hover:scale-105">
-      {React.cloneElement(icon as React.ReactElement, { className: "w-6 h-6" })}
+  <button onClick={onClick} className="flex flex-col items-center space-y-1 sm:space-y-2 group">
+    <div className="w-full aspect-square rounded-xl sm:rounded-2xl glass flex items-center justify-center group-hover:bg-red-600/10 group-hover:text-red-600 transition-all group-hover:scale-105">
+      {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5 sm:w-6 sm:h-6" })}
     </div>
-    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{label}</span>
+    <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors truncate w-full text-center">{label}</span>
   </button>
 );
 
@@ -505,16 +555,16 @@ const NavButton = ({ active, onClick, icon, label }: { active: boolean; onClick:
   <button 
     onClick={onClick}
     className={cn(
-      "flex flex-col items-center space-y-1 px-2 py-1 rounded-2xl transition-all duration-300",
+      "flex flex-col items-center space-y-1 px-1 sm:px-2 py-1 rounded-2xl transition-all duration-300",
       active ? "text-red-600" : "text-zinc-500 hover:text-zinc-300"
     )}
   >
-    {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
-    <span className="text-[8px] font-black uppercase tracking-widest">{label}</span>
+    {React.cloneElement(icon as React.ReactElement, { className: "w-4 h-4 sm:w-5 sm:h-5" })}
+    <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest">{label}</span>
     {active && (
       <motion.div 
         layoutId="nav-pill"
-        className="w-1 h-1 rounded-full bg-red-600 mt-1"
+        className="w-1 h-1 rounded-full bg-red-600 mt-0.5 sm:mt-1"
       />
     )}
   </button>
@@ -550,13 +600,13 @@ export const Dashboard = ({ user, onLogout, isDarkMode, toggleTheme, onUpdateUse
   const [modalType, setModalType] = useState<"send" | "withdraw" | "deposit" | "swap" | null>(null);
 
   const fetchTransactions = () => {
-    fetch(`/api/transactions/${user.id}`)
+    fetch(`${window.location.origin}/api/transactions/${user.id}`)
       .then(res => res.json())
       .then(data => setTransactions(data));
   };
 
   const fetchUserData = () => {
-    fetch(`/api/user/${user.id}`)
+    fetch(`${window.location.origin}/api/user/${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (data && data.balance !== user.balance) {
@@ -599,37 +649,33 @@ export const Dashboard = ({ user, onLogout, isDarkMode, toggleTheme, onUpdateUse
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="relative overflow-hidden rounded-[32px] p-8 red-gradient shadow-[0_20px_40px_rgba(255,0,0,0.3)]"
+              className="relative overflow-hidden rounded-[32px] sm:rounded-[48px] p-8 sm:p-12 red-gradient shadow-[0_40px_80px_rgba(255,0,0,0.2)] flex flex-col items-center text-center space-y-6 sm:space-y-8"
             >
-              <div className="relative z-10 space-y-8">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-white/60 text-[10px] font-bold tracking-widest uppercase">Total Wealth</p>
-                    <h3 className="text-4xl font-black tracking-tighter text-white">
-                      ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </h3>
-                  </div>
-                  <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-md flex items-center justify-center text-[8px] font-black text-white">
-                        {i}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="px-2 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10">
-                    <p className="text-[10px] font-black text-white uppercase tracking-widest">{user.tier}</p>
-                  </div>
-                </div>
+              <div className="relative z-10 space-y-2 sm:space-y-3 w-full">
+                <p className="text-white/40 text-[9px] sm:text-[11px] font-black tracking-[0.3em] uppercase">Total Wealth</p>
+                <h3 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.05em] text-white drop-shadow-2xl break-all sm:break-normal">
+                  ${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </h3>
               </div>
               
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-black/20 rounded-full blur-2xl" />
+              <div className="relative z-10 flex items-center space-x-3 sm:space-x-5 bg-white/5 backdrop-blur-2xl px-4 py-2 sm:px-6 sm:py-3 rounded-[20px] sm:rounded-[28px] border border-white/10 shadow-xl">
+                <div className="flex -space-x-2 sm:-space-x-2.5">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white/10 bg-white/10 flex items-center justify-center text-[8px] sm:text-[9px] font-black text-white shadow-inner">
+                      {i}
+                    </div>
+                  ))}
+                </div>
+                <div className="w-px h-4 sm:h-5 bg-white/20" />
+                <p className="text-[9px] sm:text-[11px] font-black text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] whitespace-nowrap">{user.tier}</p>
+              </div>
+              
+              <div className="absolute right-6 top-6 sm:right-10 sm:top-10 opacity-10">
+                <Shield className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
+              </div>
+              
+              <div className="absolute -right-20 -top-20 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-[80px] sm:blur-[100px]" />
+              <div className="absolute -left-20 -bottom-20 w-48 h-48 sm:w-64 sm:h-64 bg-black/30 rounded-full blur-[80px] sm:blur-[100px]" />
             </motion.div>
 
             {/* Quick Actions Grid */}
@@ -702,6 +748,22 @@ export const Dashboard = ({ user, onLogout, isDarkMode, toggleTheme, onUpdateUse
     }
   };
 
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const res = await fetch(`${window.location.origin}/api/health`);
+        setIsOnline(res.ok);
+      } catch {
+        setIsOnline(false);
+      }
+    };
+    const interval = setInterval(checkConnection, 10000);
+    checkConnection();
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className={cn(
       "max-w-md mx-auto min-h-screen flex flex-col pb-24 transition-colors duration-500",
@@ -712,25 +774,32 @@ export const Dashboard = ({ user, onLogout, isDarkMode, toggleTheme, onUpdateUse
         "p-6 flex items-center justify-between sticky top-0 backdrop-blur-xl z-30",
         isDarkMode ? "bg-zinc-950/80" : "bg-zinc-50/80"
       )}>
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full red-gradient flex items-center justify-center font-black text-lg shadow-lg">
-            {user.name[0]}
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full red-gradient flex items-center justify-center font-black text-xl shadow-xl border-2 border-white/10">
+              {user.name[0]}
+            </div>
+            <div className={cn(
+              "absolute bottom-0 right-0 w-4 h-4 rounded-full border-4 border-zinc-950",
+              isOnline ? "bg-emerald-500" : "bg-red-500"
+            )} />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{user.tier}</p>
-            <h2 className="text-sm font-black tracking-tight uppercase slam-in">{user.name}</h2>
+          <div className="flex flex-col">
+            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.15em] leading-none mb-1">{user.tier}</p>
+            <h2 className="text-base font-black tracking-tight uppercase leading-none slam-in">{user.name}</h2>
           </div>
         </div>
+
         <div className="flex items-center space-x-2">
           <button 
             onClick={toggleTheme}
-            className="p-2 rounded-xl bg-zinc-900/10 border border-zinc-800/10 text-zinc-500 hover:text-red-600 transition-all"
+            className="p-3 rounded-2xl glass hover:bg-white/5 transition-all"
           >
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           <button 
             onClick={onLogout}
-            className="p-2 rounded-xl bg-zinc-900/10 border border-zinc-800/10 text-zinc-500 hover:text-red-600 transition-all"
+            className="p-3 rounded-2xl glass hover:bg-red-600/10 text-red-600 transition-all"
           >
             <LogOut className="w-5 h-5" />
           </button>

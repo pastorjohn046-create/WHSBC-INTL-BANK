@@ -23,6 +23,11 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  const handleUpdateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem("whsbc_user", JSON.stringify(userData));
+  };
+
   useEffect(() => {
     const savedUser = localStorage.getItem("whsbc_user");
     if (savedUser) {
@@ -32,6 +37,15 @@ export default function App() {
         setUser(null);
       } else {
         setUser(parsedUser);
+        // Fetch latest data from server to avoid stale balance
+        fetch(`${window.location.origin}/api/user/${parsedUser.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.id) {
+              handleUpdateUser(data);
+            }
+          })
+          .catch(err => console.error("Failed to sync user data:", err));
       }
     }
     const savedTheme = localStorage.getItem("whsbc_theme");
@@ -48,8 +62,7 @@ export default function App() {
   };
 
   const handleLogin = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem("whsbc_user", JSON.stringify(userData));
+    handleUpdateUser(userData);
   };
 
   const handleLogout = () => {
@@ -90,7 +103,7 @@ export default function App() {
               onLogout={handleLogout} 
               isDarkMode={isDarkMode} 
               toggleTheme={toggleTheme}
-              onUpdateUser={setUser}
+              onUpdateUser={handleUpdateUser}
             />
             <SupportChat user={user} />
           </motion.div>

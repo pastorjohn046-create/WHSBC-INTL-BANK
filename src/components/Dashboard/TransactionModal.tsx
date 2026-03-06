@@ -50,7 +50,8 @@ export const TransactionModal = ({ isOpen, onClose, type, user, onSuccess }: Tra
     setStatus("idle");
     
     try {
-      const res = await fetch("/api/transactions/execute", {
+      const url = `${window.location.origin}/api/transactions/execute`;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,7 +76,8 @@ export const TransactionModal = ({ isOpen, onClose, type, user, onSuccess }: Tra
         setStatus("error");
       }
     } catch (err) {
-      setErrorMessage("Connection error");
+      console.error("Transaction error:", err);
+      setErrorMessage("Connection failed. Please check if the server is running.");
       setStatus("error");
     } finally {
       setLoading(false);
@@ -166,9 +168,15 @@ export const TransactionModal = ({ isOpen, onClose, type, user, onSuccess }: Tra
                   <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
                     <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                   </div>
-                  <div>
+                  <div className="flex flex-col items-center">
                     <h4 className="text-xl font-black tracking-tighter uppercase">Transaction Complete</h4>
-                    <p className="text-sm text-zinc-500">Your wealth has been moved securely.</p>
+                    <p className="text-sm text-zinc-500 mb-6">Your wealth has been moved securely.</p>
+                    <button
+                      onClick={onClose}
+                      className="px-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all font-bold uppercase tracking-widest text-[10px]"
+                    >
+                      Close
+                    </button>
                   </div>
                 </motion.div>
               ) : type === "deposit" ? (
@@ -225,23 +233,31 @@ export const TransactionModal = ({ isOpen, onClose, type, user, onSuccess }: Tra
                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 px-6 text-xl font-black tracking-tighter focus:outline-none focus:border-red-600/50 transition-all"
                       />
                     </div>
-                    <button
-                      disabled={loading}
-                      onClick={handleExecute}
-                      className={cn(
-                        "w-full py-6 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3",
-                        loading ? "bg-zinc-800 text-zinc-500" : "red-gradient text-white shadow-lg shadow-red-600/20"
-                      )}
-                    >
-                      {loading ? (
-                        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          <Shield className="w-5 h-5" />
-                          <span>Notify Deposit</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="flex flex-col space-y-3">
+                      <button
+                        disabled={loading}
+                        onClick={handleExecute}
+                        className={cn(
+                          "w-full py-6 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3",
+                          loading ? "bg-zinc-800 text-zinc-500" : "red-gradient text-white shadow-lg shadow-red-600/20"
+                        )}
+                      >
+                        {loading ? (
+                          <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <Shield className="w-5 h-5" />
+                            <span>Notify Deposit</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={onClose}
+                        className="w-full py-4 rounded-2xl bg-zinc-900 text-zinc-500 font-black uppercase tracking-widest text-xs hover:text-white transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -297,23 +313,31 @@ export const TransactionModal = ({ isOpen, onClose, type, user, onSuccess }: Tra
                     </motion.div>
                   )}
 
-                  <button
-                    disabled={loading}
-                    onClick={handleExecute}
-                    className={cn(
-                      "w-full py-6 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3",
-                      loading ? "bg-zinc-800 text-zinc-500" : "red-gradient text-white shadow-lg shadow-red-600/20"
-                    )}
-                  >
-                    {loading ? (
-                      <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Shield className="w-5 h-5" />
-                        <span>Confirm Transaction</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="flex flex-col space-y-3">
+                    <button
+                      disabled={loading}
+                      onClick={handleExecute}
+                      className={cn(
+                        "w-full py-6 rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center space-x-3",
+                        loading ? "bg-zinc-800 text-zinc-500" : "red-gradient text-white shadow-lg shadow-red-600/20"
+                      )}
+                    >
+                      {loading ? (
+                        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Shield className="w-5 h-5" />
+                          <span>Confirm Transaction</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="w-full py-4 rounded-2xl bg-zinc-900 text-zinc-500 font-black uppercase tracking-widest text-xs hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </>
               )}
             </div>

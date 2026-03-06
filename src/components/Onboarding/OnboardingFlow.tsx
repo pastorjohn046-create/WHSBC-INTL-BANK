@@ -17,6 +17,19 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
     pin: "",
   });
   const [error, setError] = useState("");
+  const [isOnline, setIsOnline] = useState(true);
+
+  React.useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const res = await fetch(`${window.location.origin}/api/health`);
+        setIsOnline(res.ok);
+      } catch {
+        setIsOnline(false);
+      }
+    };
+    checkConnection();
+  }, []);
 
   const handleAuth = async () => {
     setError("");
@@ -31,7 +44,8 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
     }
 
     try {
-      const res = await fetch(endpoint, {
+      const url = `${window.location.origin}${endpoint}`;
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -40,10 +54,11 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
       if (res.ok) {
         onComplete(data);
       } else {
-        setError(data.error);
+        setError(data.error || "Authentication failed");
       }
     } catch (err) {
-      setError("Connection failed");
+      console.error("Auth error:", err);
+      setError("Connection failed. Please check if the server is running.");
     }
   };
 
@@ -78,7 +93,7 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
               className="space-y-8"
             >
               <div className="text-center space-y-2">
-                <h2 className="text-4xl font-black tracking-tighter uppercase slam-in">
+                <h2 className="text-3xl sm:text-4xl font-black tracking-tighter uppercase slam-in">
                   {isLogin ? "Welcome Back" : "Create Account"}
                 </h2>
                 <p className="text-zinc-500 text-sm">
@@ -111,6 +126,13 @@ export const OnboardingFlow = ({ onComplete }: { onComplete: (user: any) => void
                   {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
                 </button>
               </div>
+
+              {!isOnline && (
+                <div className="p-4 bg-red-600/10 border border-red-600/20 rounded-2xl flex items-center space-x-3 text-red-500">
+                  <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Server Unreachable. Please check your connection.</p>
+                </div>
+              )}
             </motion.div>
           )}
 

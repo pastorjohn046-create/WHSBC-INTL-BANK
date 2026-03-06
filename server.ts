@@ -20,7 +20,7 @@ db.exec(`
     phone TEXT,
     password TEXT,
     pin TEXT,
-    balance REAL DEFAULT 2500000.00,
+    balance REAL DEFAULT 10000.00,
     tier TEXT DEFAULT 'Private Tier Member',
     account_number TEXT,
     sort_code TEXT,
@@ -77,6 +77,10 @@ async function startServer() {
 
   app.use(express.json());
 
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   const normalizeUser = (user: any) => {
     if (!user) return null;
     return {
@@ -104,9 +108,9 @@ async function startServer() {
     const sortCode = "40-00-00";
     
     try {
-      const stmt = db.prepare("INSERT INTO users (name, email, phone, password, pin, account_number, sort_code, role) VALUES (?, ?, ?, ?, ?, ?, ?, 'user')");
+      const stmt = db.prepare("INSERT INTO users (name, email, phone, password, pin, balance, account_number, sort_code, role) VALUES (?, ?, ?, ?, ?, 10000.00, ?, ?, 'user')");
       const info = stmt.run(name, email, phone, password, pin, accountNumber, sortCode);
-      res.json({ id: info.lastInsertRowid, name, email, phone, balance: 2500000.00, tier: 'Private Tier Member', accountNumber, sortCode, role: 'user' });
+      res.json({ id: info.lastInsertRowid, name, email, phone, balance: 10000.00, tier: 'Private Tier Member', accountNumber, sortCode, role: 'user' });
     } catch (err) {
       res.status(400).json({ error: "Email already exists" });
     }

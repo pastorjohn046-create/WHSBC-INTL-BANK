@@ -32,9 +32,9 @@ export const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
-        className="mt-8 text-center"
+        className="mt-8 text-center px-6"
       >
-        <h1 className="text-4xl font-black tracking-tighter text-white uppercase">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-white uppercase">
           WHSBC BANK
         </h1>
         <p className="mt-2 text-zinc-400 font-medium tracking-widest text-xs uppercase">
